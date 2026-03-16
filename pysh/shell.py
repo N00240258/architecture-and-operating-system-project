@@ -15,12 +15,14 @@ import subprocess
 import psutil
 
 
-from pysh.builtins import builtin_exit, builtin_pwd, builtin_sum, builtin_procinfo, builtin_cd
+from pysh.builtins import builtin_exit, builtin_pwd, builtin_sum, builtin_procinfo, builtin_cd, builtin_cat, builtin_head, builtin_wc
 from pysh.colors import BLUE, GREEN, RESET
+
+homeDir = os.getcwd()
 
 helpList = [
             "pwd - Displays current directory",
-            "cd - Change directory"
+            "cd - Change directory or return to home directory"
             "help - Displays a list of all commands",
             "procpid - Gets the current process ID",
             "procinfo - Displays some information about the process",
@@ -67,14 +69,23 @@ def execute(command, args):
     elif command == "sum":
         builtin_sum(args)
     elif command == "cd":
-        builtin_cd(args)
+        builtin_cd(args, homeDir)
     elif command == "procpid":
         proc = psutil.Process(os.getpid())
         print(proc.pid)
     elif command == "procinfo":
         builtin_procinfo(args)
+
     elif command == "exit":
         builtin_exit(args)
+
+    elif command == "cat":
+        builtin_cat(args)
+    elif command == "wc":
+        builtin_wc(args)
+
+    elif command == "head":
+        builtin_head(args)
     else:
         # Run external commands as a child process.
         # subprocess.run will search for the command on the system PATH,

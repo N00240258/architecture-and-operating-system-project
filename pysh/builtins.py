@@ -77,8 +77,84 @@ def builtin_procinfo(args):
         print(f"Process physical ram usage: {mem.rss}")
         print(f"Process virtual ram usage: {mem.vms}")
 
-def builtin_cd(args):
+def builtin_cd(args, homeDir):
     if args != []:
-        os.chdir(args[0])
+        if os.path.isdir(args[0]):
+            os.chdir(args[0])
+        else:
+            print("Please enter a valid directory")
     else:
-        os.chdir(os.getcwd())
+        os.chdir(homeDir)
+
+def builtin_cat(args):
+    for file in args:
+        if args != []:
+            filename = file
+            filepath = os.getcwd() + "/" + filename
+
+            if os.path.isfile(filepath):
+                print(f"-----{filename}-----")
+                with open(filepath,"r") as f:
+                    for i, line in enumerate(f, 1):
+                        print(f"{i}: {line}")
+            else:
+                print(f"{file} not found")
+        else:
+            print("Please enter valid file")
+            break
+
+def builtin_head(args):
+    if args[0].isdigit():
+        numLines = int(args[0])
+    else:
+        numLines = 10
+    
+    for file in args:
+        i = 0
+        if args != [] and args != args[0]:
+            filename = file
+            filepath = os.getcwd() + "/" + filename
+
+            if os.path.isfile(filepath):
+                print(f"-----{filename}-----")
+                with open(filepath,"r") as f:
+                    for i, line in enumerate(f, 1):
+                        print(f"{i}: {line}")
+                        if i >= numLines:
+                            break
+            else:
+                print(f"{file} not found")
+        elif args[0].isdigit():
+            continue
+        else:
+            print("Please enter valid file")
+            break
+
+def builtin_wc(args):
+    for file in args:
+        numLines = 0
+        numWords = 0
+        numChars = 0
+
+        if args != [] and args != args[0]:
+            filename = file
+            filepath = os.getcwd() + "/" + filename
+
+            if os.path.isfile(filepath):
+                print(f"-----{filename}-----")
+                with open(filepath,"r") as f:
+                    for line in f:
+                        numLines += 1 
+                        words = line.split()
+                        numWords += len(words)
+                        for char in line:
+                            numChars += 1
+                    print(f"In the file '{file}' there are: \n")
+                    print(f"{numLines} lines")
+                    print(f"{numWords} words")
+                    print(f"{numChars} characters")
+            else:
+                print(f"{file} not found")
+        else:
+            print("Please enter valid file")
+            break
