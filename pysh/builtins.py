@@ -11,6 +11,9 @@ Look at builtin_pwd below as a complete example to follow.
 
 import os
 import sys
+import grp
+import psutil
+from pysh.colors import BLUE, GREEN, RESET
 
 
 # ---------------------------------------------------------------------------
@@ -46,9 +49,36 @@ def builtin_exit(args):
     """
     sys.exit(0)
 
-
 # ---------------------------------------------------------------------------
 # TODO: Implement the remaining built-in commands below.
 #       Each function receives a list of string arguments.
 #       Look at builtin_pwd above as an example to follow.
 # ---------------------------------------------------------------------------
+
+def builtin_sum(args):
+    sum = 0
+    for num in args:
+        sum += int(num)
+    print(sum)
+
+def builtin_procinfo(args):
+    if args == []:
+        print("Please insert a PID")
+    elif int(args) == psutil.Process(os.getpid()):
+        print("Please enter valid PID")
+    else:
+        proc = psutil.Process(int(args))
+        #print(proc.pid)
+        print(f"Process name: {proc.name()}")
+        print(f"Process status: {proc.status()}")
+        print(f"Process CPU usage: {proc.cpu_percent()}%")
+        print(f"Process run time: {proc.cpu_times().user}s")
+        mem = proc.memory_info()
+        print(f"Process physical ram usage: {mem.rss}")
+        print(f"Process virtual ram usage: {mem.vms}")
+
+def builtin_cd(args):
+    if args != []:
+        os.chdir(args[0])
+    else:
+        os.chdir(os.getcwd())

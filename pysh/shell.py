@@ -12,10 +12,20 @@ This is the main module. It runs the shell loop:
 import grp
 import os
 import subprocess
+import psutil
 
-from pysh.builtins import builtin_exit, builtin_pwd
+
+from pysh.builtins import builtin_exit, builtin_pwd, builtin_sum, builtin_procinfo, builtin_cd
 from pysh.colors import BLUE, GREEN, RESET
 
+helpList = [
+            "pwd - Displays current directory",
+            "cd - Change directory"
+            "help - Displays a list of all commands",
+            "procpid - Gets the current process ID",
+            "procinfo - Displays some information about the process",
+            "exit - Exits the shell",
+            ]
 
 def prompt():
     """Return the shell prompt string showing the current directory."""
@@ -51,6 +61,18 @@ def execute(command, args):
     # TODO: Add your own built-in commands here
     if command == "pwd":
         builtin_pwd(args)
+    elif command == "help":
+        for command in helpList:
+            print(command)
+    elif command == "sum":
+        builtin_sum(args)
+    elif command == "cd":
+        builtin_cd(args)
+    elif command == "procpid":
+        proc = psutil.Process(os.getpid())
+        print(proc.pid)
+    elif command == "procinfo":
+        builtin_procinfo(args)
     elif command == "exit":
         builtin_exit(args)
     else:
