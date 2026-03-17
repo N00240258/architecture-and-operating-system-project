@@ -15,7 +15,7 @@ import subprocess
 import psutil
 
 
-from pysh.builtins import builtin_exit, builtin_pwd, builtin_sum, builtin_procinfo, builtin_cd, builtin_cat, builtin_head, builtin_wc
+from pysh.builtins import builtin_exit, builtin_pwd, builtin_sum, builtin_procinfo, builtin_cd, builtin_cat, builtin_head, builtin_wc, builtin_sysinfo
 from pysh.colors import BLUE, GREEN, RESET
 
 homeDir = os.getcwd()
@@ -86,6 +86,8 @@ def execute(command, args):
 
     elif command == "head":
         builtin_head(args)
+    elif command == "sysinfo":
+        builtin_sysinfo(args)
     else:
         # Run external commands as a child process.
         # subprocess.run will search for the command on the system PATH,

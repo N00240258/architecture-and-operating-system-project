@@ -12,8 +12,11 @@ Look at builtin_pwd below as a complete example to follow.
 import os
 import sys
 import grp
+import time
 import psutil
 from pysh.colors import BLUE, GREEN, RESET
+
+sortKey = ""
 
 
 # ---------------------------------------------------------------------------
@@ -158,3 +161,83 @@ def builtin_wc(args):
         else:
             print("Please enter valid file")
             break
+
+def builtin_sysinfo(args):
+    while True:
+        data = []
+        cols = {
+            "pid"     :"PID"    ,
+            "user"    :"User"   ,
+            "virt"    :"Virt"   ,
+            "res"     :"Res"    ,
+            "shr"     :"Shr"    ,
+            "cpu"     :"%CPU"   ,
+            "mem"     :"%MEM"   ,
+            "time"    :"Time"   ,
+            "process" :"Process",
+        }
+
+        for proc in psutil.process_iter([]):
+            mem = proc.memory_info()
+            cputimes = proc.cpu_times()
+            row = {
+                "pid"     : proc.pid, 
+                "user"    : proc.username(), 
+                "virt"    : mem.vms, 
+                "res"     : mem.rss ,
+                "shr"     : mem.shared, 
+                "cpu"     : round(proc.cpu_percent()/100, 2), 
+                "mem"     : round(proc.memory_percent(), 3), 
+                "time"    : cputimes.user, 
+                "process" : proc.name()
+            }
+
+            data.append(row)
+
+        global sortKey
+        if args != []:
+            if args[0] == "--sort":
+                if row.get(str(args[1])) != -1:
+                    sortKey = str(args[1]).lower()
+        else:
+            sortKey = "virt"
+
+        os.system('cls||clear')
+
+        systemVirtMem = psutil.virtual_memory()
+        print(f"Total Physical Memory: {systemVirtMem.total}")
+        print(f"Memory Used          : {systemVirtMem.used}")
+        print(f"Memory Free          : {systemVirtMem.free}")
+        print(f"Memory Percentage    : {systemVirtMem.percent}")
+        print()
+
+        systemSwapMem = psutil.swap_memory()
+        print(f"Total Swap Memory    : {systemSwapMem.total}")
+        print(f"Memory Used          : {systemSwapMem.used}")
+        print(f"Memory Free          : {systemSwapMem.free}")
+        print(f"Memory Percentage    : {systemSwapMem.percent}")
+        print()
+
+        print(f"Total Core count     : {psutil.cpu_count()}")
+        print(f"CPU usage per core   : {psutil.cpu_percent(percpu=True)}")
+        print(f"CPU usage            : {psutil.cpu_percent()}")
+        print()
+        
+        data.sort(reverse=True, key=sortFunc)
+        data.insert(0, cols)
+        for lines in data[0]:
+                print(str(data[0][lines]).ljust(15), end="")
+        print()
+        
+        for i in range(10):
+            for lines in data[i+1]:
+                print(str(data[i+1][lines]).ljust(15), end="")
+                #print(lines)
+                #print(f"{lines}: {data[i][lines]}")
+            print()
+
+        
+        time.sleep(2)
+
+def sortFunc(e):
+    return e[sortKey]
