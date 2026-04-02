@@ -11,6 +11,8 @@ Look at builtin_pwd below as a complete example to follow.
 
 import os
 import sys
+import requests
+import queue
 import grp
 import time
 import psutil
@@ -67,10 +69,9 @@ def builtin_sum(args):
 def builtin_procinfo(args):
     if args == []:
         print("Please insert a PID")
-    elif int(args) == psutil.Process(os.getpid()):
-        print("Please enter valid PID")
-    else:
-        proc = psutil.Process(int(args))
+        print(os.getpid())
+    elif args[0] == str(args[0]):
+        proc = psutil.Process(int(args[0]))
         #print(proc.pid)
         print(f"Process name: {proc.name()}")
         print(f"Process status: {proc.status()}")
@@ -79,6 +80,9 @@ def builtin_procinfo(args):
         mem = proc.memory_info()
         print(f"Process physical ram usage: {mem.rss}")
         print(f"Process virtual ram usage: {mem.vms}")
+    else:
+        print("Please enter valid PID")
+        
 
 def builtin_cd(args, homeDir):
     if args != []:
@@ -241,3 +245,22 @@ def builtin_sysinfo(args):
 
 def sortFunc(e):
     return e[sortKey]
+
+def builtin_download(args):
+    filename = args[0]
+    filepath = os.getcwd() + "/" + filename
+
+    os.makedirs("downloads", exist_ok=True)
+    if os.path.isfile(filepath):
+        with open(filepath, "r") as f:
+            for link in f:
+                filename = link.split("/")[-1]
+                response = requests.get(link.strip(), timeout=None)
+                if response.status_code == 200:
+                    with open(os.path.join("downloads", filename),"wb" ) as l:
+                        l.write(response.content)
+                    print(f"{filename.strip()}: {len(response.content)} bytes")
+                    print("Downloaded")
+                else:
+                    print(f"fail: {response.status_code}")
+            print("Finished")

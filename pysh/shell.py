@@ -15,7 +15,7 @@ import subprocess
 import psutil
 
 
-from pysh.builtins import builtin_exit, builtin_pwd, builtin_sum, builtin_procinfo, builtin_cd, builtin_cat, builtin_head, builtin_wc, builtin_sysinfo
+from pysh.builtins import builtin_exit, builtin_pwd, builtin_sum, builtin_procinfo, builtin_cd, builtin_cat, builtin_head, builtin_wc, builtin_sysinfo, builtin_download
 from pysh.colors import BLUE, GREEN, RESET
 
 homeDir = os.getcwd()
@@ -26,6 +26,10 @@ helpList = [
             "help - Displays a list of all commands",
             "procpid - Gets the current process ID",
             "procinfo - Displays some information about the process",
+            "cat",
+            "wc",
+            "head",
+            "sysinfo",
             "exit - Exits the shell",
             ]
 
@@ -70,6 +74,7 @@ def execute(command, args):
         builtin_sum(args)
     elif command == "cd":
         builtin_cd(args, homeDir)
+
     elif command == "procpid":
         proc = psutil.Process(os.getpid())
         print(proc.pid)
@@ -88,6 +93,9 @@ def execute(command, args):
         builtin_head(args)
     elif command == "sysinfo":
         builtin_sysinfo(args)
+
+    elif command == "download":
+        builtin_download(args)
     else:
         # Run external commands as a child process.
         # subprocess.run will search for the command on the system PATH,
@@ -139,3 +147,5 @@ def main():
         except SystemExit:
             # The exit command was called
             break
+
+# https://docs.python.org/3/library/readline.html
