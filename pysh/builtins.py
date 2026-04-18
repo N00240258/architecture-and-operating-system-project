@@ -16,10 +16,15 @@ import queue
 import grp
 import time
 import psutil
+import threading
 from pysh.colors import BLUE, GREEN, RESET
 
 sortKey = ""
-
+q = queue.Queue()
+incompleteDownloads = 0
+completeDownloads = 0
+failedDownloads = 0
+currentDownloads = 0
 
 # ---------------------------------------------------------------------------
 # Example built-in: pwd
@@ -249,18 +254,78 @@ def sortFunc(e):
 def builtin_download(args):
     filename = args[0]
     filepath = os.getcwd() + "/" + filename
+    workerThreads = 3
 
-    os.makedirs("downloads", exist_ok=True)
-    if os.path.isfile(filepath):
-        with open(filepath, "r") as f:
-            for link in f:
-                filename = link.split("/")[-1]
-                response = requests.get(link.strip(), timeout=None)
-                if response.status_code == 200:
-                    with open(os.path.join("downloads", filename),"wb" ) as l:
-                        l.write(response.content)
-                    print(f"{filename.strip()}: {len(response.content)} bytes")
-                    print("Downloaded")
-                else:
-                    print(f"fail: {response.status_code}")
-            print("Finished")
+    global q, incompleteDownloads, completeDownloads, failedDownloads, currentDownloads
+
+  
+    
+    
+    # print(len(args))
+    if len(args) > 1:
+        if args[1] == "-w":
+            if args[2].isdigit():
+                workerThreads = int(args[2])
+            else:
+                print("Please enter valid digit")
+        else:
+            print("Please enter valid flag")
+
+
+    if args[0] == "--status":
+            print(f"Incomplete Downloads : " + str(incompleteDownloads))
+            print(f"Current Downloads : " + str(currentDownloads))
+            print(f"Complete Downloads : " + str(completeDownloads))
+            print(f"Failed Downloads : " + str(failedDownloads))
+    else:
+        incompleteDownloads = 0
+        completeDownloads = 0
+        currentDownloads = 0
+        failedDownloads = 0
+
+        os.makedirs("downloads", exist_ok=True)
+        if os.path.isfile(filepath):
+            with open(filepath, "r") as f:
+                for link in f:
+                    q.put(link)
+                    incompleteDownloads += 1
+        else:
+            print("File not found")
+            return False
+        for i in range(workerThreads):
+            t = threading.Thread(target=fetch_url, args=[], daemon=True)
+            # print("start")
+            t.start()
+
+def fetch_url():
+    global incompleteDownloads, completeDownloads, failedDownloads, currentDownloads
+
+    # while q.empty() == False:
+    #     q.get()
+    #     print("download")
+    #     time.sleep(3)
+
+    while q.empty() == False:
+        link = q.get()
+        filename = link.split("/")[-1].strip()
+
+        incompleteDownloads -= 1
+        currentDownloads += 1
+
+        response = requests.get(link.strip(), timeout=None)
+        if response.status_code == 200:
+            with open(os.path.join("downloads", filename),"wb" ) as l:
+                l.write(response.content)
+                
+            completeDownloads += 1
+            # print(f"Downloaded {filename}: {len(response.content)} bytes")
+        else:
+            # incompleteDownloads -= 1
+            failedDownloads += 1
+            print(f"'{filename}' Fail: {response.status_code}")
+
+        currentDownloads -= 1
+
+
+    q.task_done()
+    

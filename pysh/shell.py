@@ -65,6 +65,7 @@ def execute(command, args):
     """
 
     # TODO: Add your own built-in commands here
+    
     if command == "pwd":
         builtin_pwd(args)
     elif command == "help":
@@ -125,14 +126,15 @@ def main():
     while True:
         try:
             line = input(prompt())
+            commands = line.split("&&")
+            for i in range(len(commands)):
+                command, args = parse(commands[i])
 
-            command, args = parse(line)
+                # If the user just pressed Enter, show the prompt again
+                if command is None:
+                    continue
 
-            # If the user just pressed Enter, show the prompt again
-            if command is None:
-                continue
-
-            execute(command, args)
+                execute(command, args)
 
         except EOFError:
             # Ctrl+D — exit the shell
