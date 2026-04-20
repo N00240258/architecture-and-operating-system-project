@@ -312,7 +312,17 @@ def fetch_url():
         incompleteDownloads -= 1
         currentDownloads += 1
 
-        response = requests.get(link.strip(), timeout=None)
+        try:
+            response = requests.get(link.strip(), timeout=None)
+        except:
+            print("No internet connection")
+
+            failedDownloads += 1
+            currentDownloads -= 1
+
+            q.task_done()
+            return False
+        
         if response.status_code == 200:
             with open(os.path.join("downloads", filename),"wb" ) as l:
                 l.write(response.content)

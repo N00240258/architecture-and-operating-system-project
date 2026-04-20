@@ -26,10 +26,11 @@ helpList = [
             "help - Displays a list of all commands",
             "procpid - Gets the current process ID",
             "procinfo - Displays some information about the process",
-            "cat",
-            "wc",
-            "head",
-            "sysinfo",
+            "cat - Reads the content of a file",
+            "wc - Displays how many words, lines and characters are in a file",
+            "head - Displays a specified amount of lines of a line starting from the beginning",
+            "sysinfo - Displays info of the system",
+            "download - Downloads files from a given link. --status to show information on current downloads",
             "exit - Exits the shell",
             ]
 
