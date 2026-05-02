@@ -68,9 +68,17 @@ def builtin_exit(args):
 
 def builtin_sum(args):
     sum = 0
-    for num in args:
-        sum += int(num)
-    print(sum)
+
+    if args == []:
+        print("Please insert a number")
+    else:
+        for num in args:
+            if num.isdigit():
+                sum += int(num)
+            # else:
+            #     continue    
+            
+        print(sum)
 
 def builtin_procinfo(args):
     if args == []:
