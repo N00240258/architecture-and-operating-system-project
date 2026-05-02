@@ -19,6 +19,7 @@ import psutil
 import threading
 from pysh.colors import BLUE, GREEN, RESET
 
+threadLock = threading.Lock()
 sortKey = ""
 q = queue.Queue()
 incompleteDownloads = 0
@@ -258,9 +259,6 @@ def builtin_download(args):
 
     global q, incompleteDownloads, completeDownloads, failedDownloads, currentDownloads
 
-  
-    
-    
     # print(len(args))
     if len(args) > 1:
         if args[1] == "-w":
@@ -306,36 +304,31 @@ def fetch_url():
     #     time.sleep(3)
 
     while q.empty() == False:
-        link = q.get()
-        filename = link.split("/")[-1].strip()
+        with threadLock:
+            link = q.get()
+            filename = link.split("/")[-1].strip()
 
-        incompleteDownloads -= 1
-        currentDownloads += 1
+            incompleteDownloads -= 1
+            currentDownloads += 1
 
-        try:
-            response = requests.get(link.strip(), timeout=None)
-        except:
-            print("No internet connection")
+            try:
+                response = requests.get(link.strip(), timeout=5)
+            except:
+                print("No internet connection")
 
-            failedDownloads += 1
+                failedDownloads += 1
+                currentDownloads -= 1
+                return False
+            
+            if response.status_code == 200:
+                with open(os.path.join("downloads", filename),"wb" ) as l:
+                    l.write(response.content)
+                    
+                completeDownloads += 1
+                # print(f"Downloaded {filename}: {len(response.content)} bytes")
+            else:
+                # incompleteDownloads -= 1
+                failedDownloads += 1
+                print(f"'{filename}' Fail: {response.status_code}")
+
             currentDownloads -= 1
-
-            q.task_done()
-            return False
-        
-        if response.status_code == 200:
-            with open(os.path.join("downloads", filename),"wb" ) as l:
-                l.write(response.content)
-                
-            completeDownloads += 1
-            # print(f"Downloaded {filename}: {len(response.content)} bytes")
-        else:
-            # incompleteDownloads -= 1
-            failedDownloads += 1
-            print(f"'{filename}' Fail: {response.status_code}")
-
-        currentDownloads -= 1
-
-
-    q.task_done()
-    
